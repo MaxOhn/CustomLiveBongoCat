@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2026
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "live_cam", "live_cam\live_cam.csproj", "{03607035-5944-4789-A999-0259FF5BCB74}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{03607035-5944-4789-A999-0259FF5BCB74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03607035-5944-4789-A999-0259FF5BCB74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03607035-5944-4789-A999-0259FF5BCB74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03607035-5944-4789-A999-0259FF5BCB74}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D1224C85-CE4C-46D4-8D05-494313661F3F}
+	EndGlobalSection
+EndGlobal

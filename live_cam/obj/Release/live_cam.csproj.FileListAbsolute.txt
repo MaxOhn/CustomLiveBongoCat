@@ -1,0 +1,10 @@
+C:\Users\Max\Desktop\IdeaProjects\C#-testing\live_cam\live_cam\bin\Release\live_cam.exe.config
+C:\Users\Max\Desktop\IdeaProjects\C#-testing\live_cam\live_cam\bin\Release\live_cam.exe
+C:\Users\Max\Desktop\IdeaProjects\C#-testing\live_cam\live_cam\bin\Release\live_cam.pdb
+C:\Users\Max\Desktop\IdeaProjects\C#-testing\live_cam\live_cam\obj\Release\live_cam.LiveCam.resources
+C:\Users\Max\Desktop\IdeaProjects\C#-testing\live_cam\live_cam\obj\Release\live_cam.Properties.Resources.resources
+C:\Users\Max\Desktop\IdeaProjects\C#-testing\live_cam\live_cam\obj\Release\live_cam.csproj.GenerateResource.cache
+C:\Users\Max\Desktop\IdeaProjects\C#-testing\live_cam\live_cam\obj\Release\live_cam.csproj.CoreCompileInputs.cache
+C:\Users\Max\Desktop\IdeaProjects\C#-testing\live_cam\live_cam\obj\Release\live_cam.exe
+C:\Users\Max\Desktop\IdeaProjects\C#-testing\live_cam\live_cam\obj\Release\live_cam.pdb
+C:\Users\Max\Desktop\IdeaProjects\C#-testing\live_cam\live_cam\obj\Release\live_cam.csprojAssemblyReference.cache
