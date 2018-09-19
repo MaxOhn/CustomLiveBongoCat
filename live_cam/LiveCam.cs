@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using Utilities;
 using Tesseract;
+using System.Text.RegularExpressions;
 using ScreenShotDemo;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -34,14 +35,15 @@ namespace live_cam
         private static int lastTapping;
         private static Random rand;
         private IntPtr ppWindowHandle;
-        private TesseractEngine ocr;
+        //private TesseractEngine ocr;
         private ScreenCapture sc;
-        private int ppValue;
+        //private int ppValue;
         private int lastPpValue;
         private int highestPp;
         private int mood;
         private int lastMood;
         private int ocrDelayer;
+        private static OCR ocr;
 
         KeyboardHook.VKeys button1 = KeyboardHook.VKeys.NUMPAD4;
         KeyboardHook.VKeys button2 = KeyboardHook.VKeys.NUMPAD5;
@@ -103,10 +105,10 @@ namespace live_cam
 
             rand = new Random();
 
-            ppValue = 0;
+            //ppValue = 0;
             sc = new ScreenCapture();
             ocrDelayer = 0;
-            ocr = new TesseractEngine(@"./tessdata", "eng", EngineMode.Default);
+            ocr = new OCR();
 
             CreateSprites();
         }
@@ -124,30 +126,23 @@ namespace live_cam
             ocrDelayer++;
             if (ocrDelayer == 50)
             {
-                //Console.WriteLine("------------------------");
                 ocrDelayer = 0;
-                using (Page page = ocr.Process(new Bitmap(sc.CaptureWindow(ppWindowHandle)), PageSegMode.Auto))
+                int currPP = GetOcrInt();
+                if (currPP != -1)
                 {
-                    string ocrOutput = page.GetText();
-                    string partBeforePeriod = ocrOutput.Split('.')[0];
-                    //Console.WriteLine("ocrOutput: " + ocrOutput);
-                    //Console.WriteLine("partBeforePeriod: " + partBeforePeriod);
-                    if (int.TryParse(partBeforePeriod, out ppValue))
-                    {
-                        lastPpValue = ppValue;
-                        if (ppValue > highestPp)
-                            highestPp = ppValue;
-                        //Console.WriteLine("ppValue: " + ppValue);
-                    }
-                    else
-                    {
-                        ppValue = lastPpValue;
-                    }
+                    lastPpValue = currPP;
                 }
-
             }
-            SetCurrentSector();
             LoadNewPicture();
+        }
+
+        private int GetOcrInt()
+        {
+            string ocrResult = Regex.Replace(ocr.GetNextText().Split('.')[0], @"[^\d]", "").Replace("\n", "");
+            if (int.TryParse(ocrResult, out int ppValue) && ppValue >= 0 && ppValue <= 2000)
+                return ppValue;
+            else
+                return -1;
         }
 
         private void SetCurrentSector()
@@ -166,42 +161,35 @@ namespace live_cam
 
         private int AnalyzeMood()
         {
-            if (ppValue < highestPp * 0.95)
+            if (lastPpValue < highestPp * 0.95)
             {
                 return 3;
             }
-            else if (ppValue < highestPp * 0.85)
+            else if (lastPpValue < highestPp * 0.85)
             {
                 return 4;
             }
 
-            if (ppValue == 0 || (ppValue >= 110 && ppValue < 170))
+            if (lastPpValue == 0 || (lastPpValue >= 110 && lastPpValue < 170))
             {
                 mood = 2;
             }
-            else if (ppValue > 0 && ppValue < 60)
+            else if (lastPpValue > 0 && lastPpValue < 60)
             {
                 mood = 4;
             }
-            else if (ppValue >= 60 && ppValue < 110)
+            else if (lastPpValue >= 60 && lastPpValue < 110)
             {
                 mood = 3;
             }
-            else if (ppValue >= 170 && ppValue < 220)
+            else if (lastPpValue >= 170 && lastPpValue < 220)
             {
                 mood = 1;
             }
-            else if (ppValue >= 220)
+            else if (lastPpValue >= 220)
             {
                 mood = 0;
             }
-            /*
-            if (ocrDelayer > 23)
-            {
-                Console.WriteLine("-----");
-                Console.WriteLine("pp: " + ppValue + " --- mood: " + mood);
-            }
-            */
             return mood;
         }
 
@@ -212,31 +200,26 @@ namespace live_cam
             if (pressedKeys.Count == 1)
             {
                 if (pressedKeys[0] == button1)
-                {
                     tapping = 1;
-                }
                 else if (pressedKeys[0] == button2)
-                {
                     tapping = 2;
-                }
                 else
-                {
                     tapping = rand.Next(1, 3);
-                }
             }
             else if (pressedKeys.Count > 1)
-            {
                 tapping = lastTapping;
-            }
             return tapping;
         }
 
         private void LoadNewPicture()
         {
+            if (DEBUG_WITH_CURSOR)
+                SetCurrentSector();
             if (DEBUG_WITH_TAPPING)
                 lastTapping = AnalyzeTapping();
             if (DEBUG_WITH_PP)
                 lastMood = AnalyzeMood();
+
             int mapKey = HashInts(currSecX, currSecY, lastTapping, lastMood);
             if (lastImage == mapKey)    // no unnecessary image retrieving
                 return;
