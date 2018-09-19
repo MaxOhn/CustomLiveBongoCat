@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using Utilities;
 using System.Text.RegularExpressions;
-using ScreenShotDemo;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
@@ -14,87 +13,70 @@ namespace live_cam
 {
     public partial class LiveCam : Form
     {
-
-        private static bool DEBUG_WITH_PP = true;
-        private static bool DEBUG_WITH_TAPPING = true;
-        private static bool DEBUG_WITH_CURSOR = true;
-        private static int updateRate = 50;
+        private const bool D_WITH_PP = true;
+        private const bool D_WITH_TAPPING = true;
+        private const bool D_WITH_CURSOR = true;
+        private const int updateRate = 50;
+        private const int xSectors = 4;
+        private const int ySectors = 2;
+        private const KeyboardHook.VKeys button1 = KeyboardHook.VKeys.NUMPAD4;
+        private const KeyboardHook.VKeys button2 = KeyboardHook.VKeys.NUMPAD5;
 
         private static KeyboardHook hook = new KeyboardHook();
         private static System.Timers.Timer pollTimer;
         private static List<KeyboardHook.VKeys> pressedKeys = new List<KeyboardHook.VKeys>();
-        private static int lastPressedKeysHash;
-        private static int xSectors = 4;
-        private static int ySectors = 2;
+        private static int lastPressedKeysHash = GetSequenceHashCode(pressedKeys);
         private static Dictionary<int, Bitmap> imageMap = new Dictionary<int, Bitmap>();
         private static int width;
         private static int height;
-        private static int lastImage;
-        private static int lastTapping;
-        private static Random rand;
-        private int lastPpValue;
-        private int highestPp;
-        private int lastMood;
-        private int ocrDelayer;
+        private static int lastImage = -1;     // Anything but a result from HashInts function
+        private static int tapping = 0;        // no tapping
+        private static Random rand = new Random();
+        private static int lastPpValue = 0;
+        private static int highestPp = 0;
+        private static int ocrDelayer = 0;
         private static OCR ocr;
-
-        KeyboardHook.VKeys button1 = KeyboardHook.VKeys.NUMPAD4;
-        KeyboardHook.VKeys button2 = KeyboardHook.VKeys.NUMPAD5;
 
         public LiveCam()
         {
-            KeyPreview = true;
-
             InitializeVariables();
             InitializeComponent();
             SetTimer();
 
-            hook.KeyDown += Hook_KeyDown;
-            hook.KeyUp += Hook_KeyUp;
-            hook.Install();
+            if (D_WITH_TAPPING)
+            {
+                hook.KeyDown += Hook_KeyDown;
+                hook.KeyUp += Hook_KeyUp;
+                hook.Install();
+            }
         }
 
+        // Called on hook's KeyUp event, remove key from pressedKeys
         private void Hook_KeyUp(KeyboardHook.VKeys key)
         {
             pressedKeys.Remove(key);
         }
 
+        // Called on hook's KeyDown event, add key to pressedKeys
         private void Hook_KeyDown(KeyboardHook.VKeys key)
         {
             if (!pressedKeys.Contains(key))
                 pressedKeys.Add(key);
         }
 
-        private int HashInts(int i1, int i2, int i3, int i4)
-        {
-            int hash = 23;
-            hash = hash * 31 + i1;
-            hash = hash * 31 + i2;
-            hash = hash * 31 + i3;
-            hash = hash * 31 + i4;
-            return hash;
-        }
-
+        // Variable initializing
         private void InitializeVariables()
         {
             width = Screen.FromControl(this).Bounds.Width;
             height = Screen.FromControl(this).Bounds.Height;
-
-            lastPressedKeysHash = GetSequenceHashCode(pressedKeys);
-            highestPp = 0;
-            lastPpValue = 0;
-            lastImage = -1;     // Anything but a result from HashInts function
-            lastTapping = 0;    // no tapping
-            lastMood = 2;       // neutral
-
-            rand = new Random();
             
-            ocrDelayer = 0;
-            ocr = new OCR();
+            if (D_WITH_PP)
+                ocr = new OCR();
 
             CreateSprites();
         }
 
+        // Timer for image refreshing
         private void SetTimer()
         {
             pollTimer = new System.Timers.Timer(updateRate);
@@ -103,26 +85,34 @@ namespace live_cam
             pollTimer.Enabled = true;
         }
 
+        // Triggered every (updateRate) ms
         private void OnTimedEvent(object source, ElapsedEventArgs e)
         {
-            if (DEBUG_WITH_PP)
+            UpdatePP();
+            LoadNewPicture();
+        }
+
+        // Read window content of PPShow i.e. read the current pp from Sync
+        private static void UpdatePP()
+        {
+            if (D_WITH_PP)
             {
                 ocrDelayer++;
                 if (ocrDelayer == 50)
                 {
                     ocrDelayer = 0;
                     int currPP = GetOcrInt();
-                    if (currPP != -1)
-                    {
-                        lastPpValue = currPP;
-                    }
+                    lastPpValue = currPP == -1 ? 0 : currPP;
+                    if (currPP == 0 || currPP == -1)
+                        highestPp = 0;
                 }
             }
-            LoadNewPicture();
         }
 
+        // Call to ocr, get pp value if read successfull, otherwise get -1
         private static int GetOcrInt()
         {
+            // Reading, take all characters before the first '.', remove all non-digits, remove all new lines
             string ocrResult = Regex.Replace(ocr.GetNextText().Split('.')[0], @"[^\d]", "").Replace("\n", "");
             if (int.TryParse(ocrResult, out int ppValue) && ppValue >= 0 && ppValue <= 2000)
                 return ppValue;
@@ -130,6 +120,7 @@ namespace live_cam
                 return -1;
         }
 
+        // Retrieve cursor position and transform into sector range
         private Tuple<int, int> GetCurrentSector()
         {
             // Map cursor position to sector range
@@ -145,12 +136,13 @@ namespace live_cam
             return new Tuple<int, int>(xSec, ySec);
         }
 
+        // If little pp or choke: sad (3,4) --- if much pp: happy (0,1)--- else: neutral (2)
         private int AnalyzeMood()
         {
             if (lastPpValue < highestPp * 0.95)
-                return 3;
+                return 3;   // Sad
             else if (lastPpValue < highestPp * 0.85)
-                return 4;
+                return 4;   // Very sad
             
             if (lastPpValue > 0 && lastPpValue < 60)
                 return 4;    // Very sad
@@ -164,48 +156,69 @@ namespace live_cam
                 return 2;   // Neutral
         }
 
+        // 0: no tapping --- 1: button1 pressed --- 2: button2 pressed --- 1 or 2 if other button pressed
         private int AnalyzeTapping()
         {
-            // 0: no tapping --- 1: button1 --- 2: button2 --- 1 or 2 if other button
-            int tapping = 0;
             if (pressedKeys.Count == 1)
             {
                 int currPressedKeysHash = GetSequenceHashCode(pressedKeys);
                 if (pressedKeys[0] == button1)
-                    tapping = 1;
+                    return 1;               // button1
                 else if (pressedKeys[0] == button2)
-                    tapping = 2;
+                    return 2;               // button2
                 else if (currPressedKeysHash != lastPressedKeysHash)
                 {
                     lastPressedKeysHash = currPressedKeysHash;
-                    tapping = rand.Next(1, 3);
+                    return rand.Next(1, 3); // 1 or 2 randomly
                 }
                 else
-                    tapping = lastTapping;
+                    return tapping;         // no change (same button still pressed)
             }
             else if (pressedKeys.Count > 1)
-                tapping = lastTapping;
-            return tapping;
+                return tapping;             // no change
+            else
+                return 0;                   // no tapping
         }
 
+        // Retrieve situation info and select appropriate picture
         private void LoadNewPicture()
         {
-            //if (DEBUG_WITH_CURSOR)
-            //    SetCurrentSector();
-            if (DEBUG_WITH_TAPPING)
-                lastTapping = AnalyzeTapping();
-            if (DEBUG_WITH_PP)
-                lastMood = AnalyzeMood();
+            // Retrieve info
+            Tuple<int, int> currSectors = D_WITH_CURSOR ? GetCurrentSector() : new Tuple<int, int>(0, 0);
+            tapping = D_WITH_TAPPING ? AnalyzeTapping() : tapping;
+            int mood = D_WITH_PP ? AnalyzeMood() : 2;
 
-            Tuple<int, int> currSectors = GetCurrentSector();
-
-            int mapKey = HashInts(currSectors.Item1, currSectors.Item2, lastTapping, lastMood);
+            // Find picture
+            int mapKey = GetIntHashCode(currSectors.Item1, currSectors.Item2, tapping, mood);
             if (lastImage == mapKey)    // no unnecessary image retrieving
                 return;
             lastImage = mapKey;
             pictureBox.Image = imageMap[mapKey];
         }
 
+        // Given 4 integers, return their hash code
+        private static int GetIntHashCode(int i1, int i2, int i3, int i4)
+        {
+            int hash = 23;
+            hash = hash * 31 + i1;
+            hash = hash * 31 + i2;
+            hash = hash * 31 + i3;
+            hash = hash * 31 + i4;
+            return hash;
+        }
+
+        // Given a list, return its hash code
+        private static int GetSequenceHashCode<T>(IList<T> sequence)
+        {
+            const int seed = 487;
+            const int modifier = 31;
+            unchecked
+            {
+                return sequence.Aggregate(seed, (current, item) => (current * modifier) + item.GetHashCode());
+            }
+        }
+
+        // Draws smallBmp over largeBmp, location depends on x_margin and y_margin
         public static Bitmap Superimpose(Bitmap largeBmp, Bitmap smallBmp, int x_margin, int y_margin)
         {
             Bitmap largeBmpCopy = (Bitmap)largeBmp.Clone();
@@ -219,51 +232,13 @@ namespace live_cam
             }
         }
 
-        private static int GetSequenceHashCode<T>(IList<T> sequence)
+        // Create mouth and tapping related bitmaps
+        private static void CreateSprites()
         {
-            const int seed = 487;
-            const int modifier = 31;
-
-            unchecked
-            {
-                return sequence.Aggregate(seed, (current, item) =>
-                    (current * modifier) + item.GetHashCode());
-            }
-        }
-
-        private void CreateSprites()
-        {
-            /*
-            Bitmap bc01 = Superimpose(baseSprite, c01, 360 - 35 - 135, 270 - 100 - 115 + 20);
-            Bitmap btU = Superimpose(baseSprite, tU, 360 - 160 - 130, 270 - 115 - 130 + 20);
-            Bitmap bmS2 = Superimpose(baseSprite, mS2, 360 - 150 - 100, 270 - 90 - 50 + 20);
-            */
-
-            /*
-            // Cursor arm:
-            int xStart = 35;
-            int yStart = 115;
-            int pWidth = 135;
-            int pHeight = 100;
-            
-            // Tapping arm:
-            int xStart = 160;
-            int yStart = 130;
-            int pWidth = 130;
-            int pHeight = 105;
-            
-            // Mouth:
-            int xStart = 150;
-            int yStart = 75;
-            int pWidth = 100;
-            int pHeight = 30;
-            */
-
             int mouth_x_margin = 110;
             int mouth_y_margin = 165;
             int tap_x_margin = 70;
             int tap_y_margin = 55;
-
 
             using (Bitmap b = Properties.Resources.baseSprite)
             {
@@ -315,20 +290,21 @@ namespace live_cam
             }
         }
 
-        private void FillImageMap(Bitmap baseSprite, int mouth, int tap)
+        // Create cursor related bitmaps and put them in imageMap
+        private static void FillImageMap(Bitmap baseSprite, int mouth, int tap)
         {
             int cursor_x_margin = 190;
             int cursor_y_margin = 75;
 
             // x sector, y sector, tapping (no tapping, button1, button2), mood (very happy, happy, neutral, sad, very sad)
-            imageMap.Add(HashInts(0, 0, tap, mouth), Superimpose(baseSprite, Properties.Resources.c00, cursor_x_margin, cursor_y_margin));
-            imageMap.Add(HashInts(1, 0, tap, mouth), Superimpose(baseSprite, Properties.Resources.c10, cursor_x_margin, cursor_y_margin));
-            imageMap.Add(HashInts(2, 0, tap, mouth), Superimpose(baseSprite, Properties.Resources.c20, cursor_x_margin, cursor_y_margin));
-            imageMap.Add(HashInts(3, 0, tap, mouth), Superimpose(baseSprite, Properties.Resources.c30, cursor_x_margin, cursor_y_margin));
-            imageMap.Add(HashInts(0, 1, tap, mouth), Superimpose(baseSprite, Properties.Resources.c01, cursor_x_margin, cursor_y_margin));
-            imageMap.Add(HashInts(1, 1, tap, mouth), Superimpose(baseSprite, Properties.Resources.c11, cursor_x_margin, cursor_y_margin));
-            imageMap.Add(HashInts(2, 1, tap, mouth), Superimpose(baseSprite, Properties.Resources.c21, cursor_x_margin, cursor_y_margin));
-            imageMap.Add(HashInts(3, 1, tap, mouth), Superimpose(baseSprite, Properties.Resources.c31, cursor_x_margin, cursor_y_margin));
+            imageMap.Add(GetIntHashCode(0, 0, tap, mouth), Superimpose(baseSprite, Properties.Resources.c00, cursor_x_margin, cursor_y_margin));
+            imageMap.Add(GetIntHashCode(1, 0, tap, mouth), Superimpose(baseSprite, Properties.Resources.c10, cursor_x_margin, cursor_y_margin));
+            imageMap.Add(GetIntHashCode(2, 0, tap, mouth), Superimpose(baseSprite, Properties.Resources.c20, cursor_x_margin, cursor_y_margin));
+            imageMap.Add(GetIntHashCode(3, 0, tap, mouth), Superimpose(baseSprite, Properties.Resources.c30, cursor_x_margin, cursor_y_margin));
+            imageMap.Add(GetIntHashCode(0, 1, tap, mouth), Superimpose(baseSprite, Properties.Resources.c01, cursor_x_margin, cursor_y_margin));
+            imageMap.Add(GetIntHashCode(1, 1, tap, mouth), Superimpose(baseSprite, Properties.Resources.c11, cursor_x_margin, cursor_y_margin));
+            imageMap.Add(GetIntHashCode(2, 1, tap, mouth), Superimpose(baseSprite, Properties.Resources.c21, cursor_x_margin, cursor_y_margin));
+            imageMap.Add(GetIntHashCode(3, 1, tap, mouth), Superimpose(baseSprite, Properties.Resources.c31, cursor_x_margin, cursor_y_margin));
         }
     }
 }

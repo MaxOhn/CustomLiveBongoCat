@@ -20,19 +20,27 @@ namespace live_cam
             ocr = new TesseractEngine(@"./tessdata", "eng", EngineMode.Default);
         }
 
+        // Let tesseract read GetWindowScreenshot' bitmap and return text
         public string GetNextText()
         {
-            using (Page page = ocr.Process(GetWindowScreenshot(), PageSegMode.Auto))
+            try
             {
-                return page.GetText();
+                using (Page page = ocr.Process(GetWindowScreenshot(), PageSegMode.Auto))
+                    return page.GetText();
+            }
+            catch (Exception)
+            {
+                return "";
             }
         }
 
+        // Return bitmap containing content of PPShow's window
         private Bitmap GetWindowScreenshot()
         {
             return new Bitmap(screenCapture.CaptureWindow(ppWindowHandle));
         }
 
+        // Try finding the PPShow window and return its handle
         private IntPtr GetHandle()
         {
             IntPtr ppWindowHandle = IntPtr.Zero;
