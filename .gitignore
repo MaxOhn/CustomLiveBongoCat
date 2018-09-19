@@ -500,4 +500,5 @@ ASALocalRun/
 
 
 # Custom entries
-.vs/*
+live_cam/bin/Debug/
+live_cam/obj/Debug/
