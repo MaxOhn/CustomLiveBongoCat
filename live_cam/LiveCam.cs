@@ -4,12 +4,11 @@ using System.Timers;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using Utilities;
-using Tesseract;
 using System.Text.RegularExpressions;
 using ScreenShotDemo;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Diagnostics;
+using System.Linq;
 
 namespace live_cam
 {
@@ -22,10 +21,9 @@ namespace live_cam
         private static int updateRate = 50;
 
         private static KeyboardHook hook = new KeyboardHook();
-        private static System.Timers.Timer timer;
+        private static System.Timers.Timer pollTimer;
         private static List<KeyboardHook.VKeys> pressedKeys = new List<KeyboardHook.VKeys>();
-        private static int currSecX = 0;
-        private static int currSecY = 0;
+        private static int lastPressedKeysHash;
         private static int xSectors = 4;
         private static int ySectors = 2;
         private static Dictionary<int, Bitmap> imageMap = new Dictionary<int, Bitmap>();
@@ -34,13 +32,8 @@ namespace live_cam
         private static int lastImage;
         private static int lastTapping;
         private static Random rand;
-        private IntPtr ppWindowHandle;
-        //private TesseractEngine ocr;
-        private ScreenCapture sc;
-        //private int ppValue;
         private int lastPpValue;
         private int highestPp;
-        private int mood;
         private int lastMood;
         private int ocrDelayer;
         private static OCR ocr;
@@ -56,19 +49,9 @@ namespace live_cam
             InitializeComponent();
             SetTimer();
 
-            ppWindowHandle = Handle;
-            foreach (Process proc in Process.GetProcesses())
-            {
-                if (proc.MainWindowTitle == "PPShow")
-                    ppWindowHandle = proc.MainWindowHandle;
-            }
-            if (ppWindowHandle == Handle)
-                Console.WriteLine("no pp handle found");
-
             hook.KeyDown += Hook_KeyDown;
             hook.KeyUp += Hook_KeyUp;
             hook.Install();
-            
         }
 
         private void Hook_KeyUp(KeyboardHook.VKeys key)
@@ -97,16 +80,15 @@ namespace live_cam
             width = Screen.FromControl(this).Bounds.Width;
             height = Screen.FromControl(this).Bounds.Height;
 
+            lastPressedKeysHash = GetSequenceHashCode(pressedKeys);
             highestPp = 0;
             lastPpValue = 0;
             lastImage = -1;     // Anything but a result from HashInts function
             lastTapping = 0;    // no tapping
-            mood = 2;           // neutral
+            lastMood = 2;       // neutral
 
             rand = new Random();
-
-            //ppValue = 0;
-            sc = new ScreenCapture();
+            
             ocrDelayer = 0;
             ocr = new OCR();
 
@@ -115,28 +97,31 @@ namespace live_cam
 
         private void SetTimer()
         {
-            timer = new System.Timers.Timer(updateRate);
-            timer.Elapsed += OnTimedEvent;
-            timer.AutoReset = true;
-            timer.Enabled = true;
+            pollTimer = new System.Timers.Timer(updateRate);
+            pollTimer.Elapsed += OnTimedEvent;
+            pollTimer.AutoReset = true;
+            pollTimer.Enabled = true;
         }
 
         private void OnTimedEvent(object source, ElapsedEventArgs e)
         {
-            ocrDelayer++;
-            if (ocrDelayer == 50)
+            if (DEBUG_WITH_PP)
             {
-                ocrDelayer = 0;
-                int currPP = GetOcrInt();
-                if (currPP != -1)
+                ocrDelayer++;
+                if (ocrDelayer == 50)
                 {
-                    lastPpValue = currPP;
+                    ocrDelayer = 0;
+                    int currPP = GetOcrInt();
+                    if (currPP != -1)
+                    {
+                        lastPpValue = currPP;
+                    }
                 }
             }
             LoadNewPicture();
         }
 
-        private int GetOcrInt()
+        private static int GetOcrInt()
         {
             string ocrResult = Regex.Replace(ocr.GetNextText().Split('.')[0], @"[^\d]", "").Replace("\n", "");
             if (int.TryParse(ocrResult, out int ppValue) && ppValue >= 0 && ppValue <= 2000)
@@ -145,52 +130,38 @@ namespace live_cam
                 return -1;
         }
 
-        private void SetCurrentSector()
+        private Tuple<int, int> GetCurrentSector()
         {
             // Map cursor position to sector range
-            currSecX = (int)((double)xSectors / width * MousePosition.X);
-            currSecY = (int)((double)ySectors / height * MousePosition.Y);
+            int xSec = (int)((double)xSectors / width * MousePosition.X);
+            int ySec = (int)((double)ySectors / height * MousePosition.Y);
 
             // If outside of main screen
-            if (currSecX < 0 || currSecX > xSectors - 1 || currSecY < 0 || currSecY > ySectors - 1)
+            if (xSec < 0 || xSec > xSectors - 1 || ySec < 0 || ySec > ySectors - 1)
             {
-                currSecX = 0;
-                currSecY = 0;
+                xSec = 0;
+                ySec = 0;
             }
+            return new Tuple<int, int>(xSec, ySec);
         }
 
         private int AnalyzeMood()
         {
             if (lastPpValue < highestPp * 0.95)
-            {
                 return 3;
-            }
             else if (lastPpValue < highestPp * 0.85)
-            {
                 return 4;
-            }
-
-            if (lastPpValue == 0 || (lastPpValue >= 110 && lastPpValue < 170))
-            {
-                mood = 2;
-            }
-            else if (lastPpValue > 0 && lastPpValue < 60)
-            {
-                mood = 4;
-            }
+            
+            if (lastPpValue > 0 && lastPpValue < 60)
+                return 4;    // Very sad
             else if (lastPpValue >= 60 && lastPpValue < 110)
-            {
-                mood = 3;
-            }
+                return 3;   // Sad
             else if (lastPpValue >= 170 && lastPpValue < 220)
-            {
-                mood = 1;
-            }
+                return 1;   // Happy
             else if (lastPpValue >= 220)
-            {
-                mood = 0;
-            }
-            return mood;
+                return 0;   // Very happy
+            else
+                return 2;   // Neutral
         }
 
         private int AnalyzeTapping()
@@ -199,12 +170,18 @@ namespace live_cam
             int tapping = 0;
             if (pressedKeys.Count == 1)
             {
+                int currPressedKeysHash = GetSequenceHashCode(pressedKeys);
                 if (pressedKeys[0] == button1)
                     tapping = 1;
                 else if (pressedKeys[0] == button2)
                     tapping = 2;
-                else
+                else if (currPressedKeysHash != lastPressedKeysHash)
+                {
+                    lastPressedKeysHash = currPressedKeysHash;
                     tapping = rand.Next(1, 3);
+                }
+                else
+                    tapping = lastTapping;
             }
             else if (pressedKeys.Count > 1)
                 tapping = lastTapping;
@@ -213,46 +190,45 @@ namespace live_cam
 
         private void LoadNewPicture()
         {
-            if (DEBUG_WITH_CURSOR)
-                SetCurrentSector();
+            //if (DEBUG_WITH_CURSOR)
+            //    SetCurrentSector();
             if (DEBUG_WITH_TAPPING)
                 lastTapping = AnalyzeTapping();
             if (DEBUG_WITH_PP)
                 lastMood = AnalyzeMood();
 
-            int mapKey = HashInts(currSecX, currSecY, lastTapping, lastMood);
+            Tuple<int, int> currSectors = GetCurrentSector();
+
+            int mapKey = HashInts(currSectors.Item1, currSectors.Item2, lastTapping, lastMood);
             if (lastImage == mapKey)    // no unnecessary image retrieving
                 return;
             lastImage = mapKey;
-            pictureBox1.Image = imageMap[mapKey];
+            pictureBox.Image = imageMap[mapKey];
         }
 
-        public Bitmap Superimpose(Bitmap largeBmp, Bitmap smallBmp, int x_margin, int y_margin)
+        public static Bitmap Superimpose(Bitmap largeBmp, Bitmap smallBmp, int x_margin, int y_margin)
         {
             Bitmap largeBmpCopy = (Bitmap)largeBmp.Clone();
-            Bitmap smallBmpCopy = (Bitmap)smallBmp.Clone();
-            Graphics g = Graphics.FromImage(largeBmpCopy);
-            g.CompositingMode = CompositingMode.SourceOver;
-            int x = largeBmpCopy.Width - smallBmpCopy.Width - x_margin;
-            int y = largeBmpCopy.Height - smallBmpCopy.Height - y_margin;
-            g.DrawImage(smallBmpCopy, new Point(x, y));
-            return largeBmpCopy;
+            using (Graphics g = Graphics.FromImage(largeBmpCopy))
+            {
+                g.CompositingMode = CompositingMode.SourceOver;
+                int x = largeBmpCopy.Width - smallBmp.Width - x_margin;
+                int y = largeBmpCopy.Height - smallBmp.Height - y_margin;
+                g.DrawImage(smallBmp, new Point(x, y));
+                return largeBmpCopy;
+            }
         }
 
-        private void FillImageMap(Bitmap baseSprite, int mouth, int tap)
+        private static int GetSequenceHashCode<T>(IList<T> sequence)
         {
-            int cursor_x_margin = 190;
-            int cursor_y_margin = 75;
+            const int seed = 487;
+            const int modifier = 31;
 
-            // x sector, y sector, tapping (no tapping, button1, button2), mood (very happy, happy, neutral, sad, very sad)
-            imageMap.Add(HashInts(0, 0, tap, mouth), Superimpose(baseSprite, Properties.Resources.c00, cursor_x_margin, cursor_y_margin));
-            imageMap.Add(HashInts(1, 0, tap, mouth), Superimpose(baseSprite, Properties.Resources.c10, cursor_x_margin, cursor_y_margin));
-            imageMap.Add(HashInts(2, 0, tap, mouth), Superimpose(baseSprite, Properties.Resources.c20, cursor_x_margin, cursor_y_margin));
-            imageMap.Add(HashInts(3, 0, tap, mouth), Superimpose(baseSprite, Properties.Resources.c30, cursor_x_margin, cursor_y_margin));
-            imageMap.Add(HashInts(0, 1, tap, mouth), Superimpose(baseSprite, Properties.Resources.c01, cursor_x_margin, cursor_y_margin));
-            imageMap.Add(HashInts(1, 1, tap, mouth), Superimpose(baseSprite, Properties.Resources.c11, cursor_x_margin, cursor_y_margin));
-            imageMap.Add(HashInts(2, 1, tap, mouth), Superimpose(baseSprite, Properties.Resources.c21, cursor_x_margin, cursor_y_margin));
-            imageMap.Add(HashInts(3, 1, tap, mouth), Superimpose(baseSprite, Properties.Resources.c31, cursor_x_margin, cursor_y_margin));
+            unchecked
+            {
+                return sequence.Aggregate(seed, (current, item) =>
+                    (current * modifier) + item.GetHashCode());
+            }
         }
 
         private void CreateSprites()
@@ -289,82 +265,70 @@ namespace live_cam
             int tap_y_margin = 55;
 
 
-            Bitmap b = Properties.Resources.baseSprite;
-            using (Bitmap happy2 = Superimpose(b, Properties.Resources.mH2, mouth_x_margin, mouth_y_margin))
+            using (Bitmap b = Properties.Resources.baseSprite)
             {
-                using (Bitmap tapL = Superimpose(happy2, Properties.Resources.tL, tap_x_margin, tap_y_margin))
+                using (Bitmap happy2 = Superimpose(b, Properties.Resources.mH2, mouth_x_margin, mouth_y_margin))
                 {
-                    FillImageMap(tapL, 0, 2);
+                    using (Bitmap tapL = Superimpose(happy2, Properties.Resources.tL, tap_x_margin, tap_y_margin))
+                        FillImageMap(tapL, 0, 2);
+                    using (Bitmap tapR = Superimpose(happy2, Properties.Resources.tR, tap_x_margin, tap_y_margin))
+                        FillImageMap(tapR, 0, 1);
+                    using (Bitmap tapU = Superimpose(happy2, Properties.Resources.tU, tap_x_margin, tap_y_margin))
+                        FillImageMap(tapU, 0, 0);
                 }
-                using (Bitmap tapR = Superimpose(happy2, Properties.Resources.tR, tap_x_margin, tap_y_margin))
+                using (Bitmap happy1 = Superimpose(b, Properties.Resources.mH1, mouth_x_margin, mouth_y_margin))
                 {
-                    FillImageMap(tapR, 0, 1);
+                    using (Bitmap tapL = Superimpose(happy1, Properties.Resources.tL, tap_x_margin, tap_y_margin))
+                        FillImageMap(tapL, 1, 2);
+                    using (Bitmap tapR = Superimpose(happy1, Properties.Resources.tR, tap_x_margin, tap_y_margin))
+                        FillImageMap(tapR, 1, 1);
+                    using (Bitmap tapU = Superimpose(happy1, Properties.Resources.tU, tap_x_margin, tap_y_margin))
+                        FillImageMap(tapU, 1, 0);
                 }
-                using (Bitmap tapU = Superimpose(happy2, Properties.Resources.tU, tap_x_margin, tap_y_margin))
+                using (Bitmap neutral = Superimpose(b, Properties.Resources.mN, mouth_x_margin, mouth_y_margin))
                 {
-                    FillImageMap(tapU, 0, 0);
+                    using (Bitmap tapL = Superimpose(neutral, Properties.Resources.tL, tap_x_margin, tap_y_margin))
+                        FillImageMap(tapL, 2, 2);
+                    using (Bitmap tapR = Superimpose(neutral, Properties.Resources.tR, tap_x_margin, tap_y_margin))
+                        FillImageMap(tapR, 2, 1);
+                    using (Bitmap tapU = Superimpose(neutral, Properties.Resources.tU, tap_x_margin, tap_y_margin))
+                        FillImageMap(tapU, 2, 0);
+                }
+                using (Bitmap sad1 = Superimpose(b, Properties.Resources.mS1, mouth_x_margin, mouth_y_margin))
+                {
+                    using (Bitmap tapL = Superimpose(sad1, Properties.Resources.tL, tap_x_margin, tap_y_margin))
+                        FillImageMap(tapL, 3, 2);
+                    using (Bitmap tapR = Superimpose(sad1, Properties.Resources.tR, tap_x_margin, tap_y_margin))
+                        FillImageMap(tapR, 3, 1);
+                    using (Bitmap tapU = Superimpose(sad1, Properties.Resources.tU, tap_x_margin, tap_y_margin))
+                        FillImageMap(tapU, 3, 0);
+                }
+                using (Bitmap sad2 = Superimpose(b, Properties.Resources.mS2, mouth_x_margin, mouth_y_margin))
+                {
+                    using (Bitmap tapL = Superimpose(sad2, Properties.Resources.tL, tap_x_margin, tap_y_margin))
+                        FillImageMap(tapL, 4, 2);
+                    using (Bitmap tapR = Superimpose(sad2, Properties.Resources.tR, tap_x_margin, tap_y_margin))
+                        FillImageMap(tapR, 4, 1);
+                    using (Bitmap tapU = Superimpose(sad2, Properties.Resources.tU, tap_x_margin, tap_y_margin))
+                        FillImageMap(tapU, 4, 0);
                 }
             }
-            using (Bitmap happy1 = Superimpose(b, Properties.Resources.mH1, mouth_x_margin, mouth_y_margin))
-            {
-                using (Bitmap tapL = Superimpose(happy1, Properties.Resources.tL, tap_x_margin, tap_y_margin))
-                {
-                    FillImageMap(tapL, 1, 2);
-                }
-                using (Bitmap tapR = Superimpose(happy1, Properties.Resources.tR, tap_x_margin, tap_y_margin))
-                {
-                    FillImageMap(tapR, 1, 1);
-                }
-                using (Bitmap tapU = Superimpose(happy1, Properties.Resources.tU, tap_x_margin, tap_y_margin))
-                {
-                    FillImageMap(tapU, 1, 0);
-                }
-            }
-            using (Bitmap neutral = Superimpose(b, Properties.Resources.mN, mouth_x_margin, mouth_y_margin))
-            {
-                using (Bitmap tapL = Superimpose(neutral, Properties.Resources.tL, tap_x_margin, tap_y_margin))
-                {
-                    FillImageMap(tapL, 2, 2);
-                }
-                using (Bitmap tapR = Superimpose(neutral, Properties.Resources.tR, tap_x_margin, tap_y_margin))
-                {
-                    FillImageMap(tapR, 2, 1);
-                }
-                using (Bitmap tapU = Superimpose(neutral, Properties.Resources.tU, tap_x_margin, tap_y_margin))
-                {
-                    FillImageMap(tapU, 2, 0);
-                }
-            }
-            using (Bitmap sad1 = Superimpose(b, Properties.Resources.mS1, mouth_x_margin, mouth_y_margin))
-            {
-                using (Bitmap tapL = Superimpose(sad1, Properties.Resources.tL, tap_x_margin, tap_y_margin))
-                {
-                    FillImageMap(tapL, 3, 2);
-                }
-                using (Bitmap tapR = Superimpose(sad1, Properties.Resources.tR, tap_x_margin, tap_y_margin))
-                {
-                    FillImageMap(tapR, 3, 1);
-                }
-                using (Bitmap tapU = Superimpose(sad1, Properties.Resources.tU, tap_x_margin, tap_y_margin))
-                {
-                    FillImageMap(tapU, 3, 0);
-                }
-            }
-            using (Bitmap sad2 = Superimpose(b, Properties.Resources.mS2, mouth_x_margin, mouth_y_margin))
-            {
-                using (Bitmap tapL = Superimpose(sad2, Properties.Resources.tL, tap_x_margin, tap_y_margin))
-                {
-                    FillImageMap(tapL, 4, 2);
-                }
-                using (Bitmap tapR = Superimpose(sad2, Properties.Resources.tR, tap_x_margin, tap_y_margin))
-                {
-                    FillImageMap(tapR, 4, 1);
-                }
-                using (Bitmap tapU = Superimpose(sad2, Properties.Resources.tU, tap_x_margin, tap_y_margin))
-                {
-                    FillImageMap(tapU, 4, 0);
-                }
-            }
+        }
+
+        private void FillImageMap(Bitmap baseSprite, int mouth, int tap)
+        {
+            int cursor_x_margin = 190;
+            int cursor_y_margin = 75;
+
+            // x sector, y sector, tapping (no tapping, button1, button2), mood (very happy, happy, neutral, sad, very sad)
+            imageMap.Add(HashInts(0, 0, tap, mouth), Superimpose(baseSprite, Properties.Resources.c00, cursor_x_margin, cursor_y_margin));
+            imageMap.Add(HashInts(1, 0, tap, mouth), Superimpose(baseSprite, Properties.Resources.c10, cursor_x_margin, cursor_y_margin));
+            imageMap.Add(HashInts(2, 0, tap, mouth), Superimpose(baseSprite, Properties.Resources.c20, cursor_x_margin, cursor_y_margin));
+            imageMap.Add(HashInts(3, 0, tap, mouth), Superimpose(baseSprite, Properties.Resources.c30, cursor_x_margin, cursor_y_margin));
+            imageMap.Add(HashInts(0, 1, tap, mouth), Superimpose(baseSprite, Properties.Resources.c01, cursor_x_margin, cursor_y_margin));
+            imageMap.Add(HashInts(1, 1, tap, mouth), Superimpose(baseSprite, Properties.Resources.c11, cursor_x_margin, cursor_y_margin));
+            imageMap.Add(HashInts(2, 1, tap, mouth), Superimpose(baseSprite, Properties.Resources.c21, cursor_x_margin, cursor_y_margin));
+            imageMap.Add(HashInts(3, 1, tap, mouth), Superimpose(baseSprite, Properties.Resources.c31, cursor_x_margin, cursor_y_margin));
         }
     }
 }

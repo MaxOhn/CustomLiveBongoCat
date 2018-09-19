@@ -18,20 +18,14 @@ namespace live_cam
             ppWindowHandle = GetHandle();
             screenCapture = new ScreenCapture();
             ocr = new TesseractEngine(@"./tessdata", "eng", EngineMode.Default);
-            Console.WriteLine("ocr initialized...");
         }
 
         public string GetNextText()
         {
-            //Page page = ocr.Process(GetWindowScreenshot(), PageSegMode.Auto);
-            //Console.WriteLine("took screenshot and processed to page...");
-            //return page.GetText();
-            
             using (Page page = ocr.Process(GetWindowScreenshot(), PageSegMode.Auto))
             {
                 return page.GetText();
             }
-            
         }
 
         private Bitmap GetWindowScreenshot()
@@ -49,13 +43,13 @@ namespace live_cam
             }
             if (ppWindowHandle == IntPtr.Zero)
                 throw new Exception("OCR could not find ppWindowHandle");
-            Console.WriteLine("found handle...");
             return ppWindowHandle;
         }
 
         protected override void Dispose(bool disposing)
         {
-            ocr.Dispose();
+            if (disposing)
+                ocr.Dispose();
         }
     }
 }
