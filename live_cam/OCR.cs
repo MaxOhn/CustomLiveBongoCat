@@ -17,7 +17,7 @@ namespace live_cam
         {
             ppWindowHandle = GetHandle();
             screenCapture = new ScreenCapture();
-            ocr = new TesseractEngine(@"./tessdata", "eng", EngineMode.Default);
+            ocr = new TesseractEngine(@"../../tessdata", "eng", EngineMode.Default);
         }
 
         // Let tesseract read GetWindowScreenshot' bitmap and return text

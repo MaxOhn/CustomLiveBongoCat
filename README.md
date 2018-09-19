@@ -1,6 +1,6 @@
 Inspired by reddit user [/u/ZeCryptic](https://www.reddit.com/user/ZeCryptic) in his recent [post](https://www.reddit.com/r/osugame/comments/9gah62/i_made_a_bongo_cat_cam_for_osu_that_works_in_real/) I was just playing around with a custom version of a realtime bongo cat.
 
-Preview: https://streamable.com/3by5o
+Preview: https://streamable.com/486i9
 
 A working .exe can be found in live_cam/bin/Release/live_cam.exe
 
