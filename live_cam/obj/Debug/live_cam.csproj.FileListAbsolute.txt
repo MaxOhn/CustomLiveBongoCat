@@ -8,3 +8,10 @@ C:\Users\Max\Desktop\IdeaProjects\C#-testing\live_cam\live_cam\obj\Debug\live_ca
 C:\Users\Max\Desktop\IdeaProjects\C#-testing\live_cam\live_cam\obj\Debug\live_cam.exe
 C:\Users\Max\Desktop\IdeaProjects\C#-testing\live_cam\live_cam\obj\Debug\live_cam.pdb
 C:\Users\Max\Desktop\IdeaProjects\C#-testing\live_cam\live_cam\obj\Debug\live_cam.LiveCam.resources
+C:\Users\Max\Desktop\IdeaProjects\C#-testing\live_cam\live_cam\obj\Debug\live_cam.csproj.CopyComplete
+C:\Users\Max\Desktop\IdeaProjects\C#-testing\live_cam\live_cam\bin\Debug\x64\liblept172.dll
+C:\Users\Max\Desktop\IdeaProjects\C#-testing\live_cam\live_cam\bin\Debug\x64\libtesseract304.dll
+C:\Users\Max\Desktop\IdeaProjects\C#-testing\live_cam\live_cam\bin\Debug\x86\liblept172.dll
+C:\Users\Max\Desktop\IdeaProjects\C#-testing\live_cam\live_cam\bin\Debug\x86\libtesseract304.dll
+C:\Users\Max\Desktop\IdeaProjects\C#-testing\live_cam\live_cam\bin\Debug\Tesseract.dll
+C:\Users\Max\Desktop\IdeaProjects\C#-testing\live_cam\live_cam\bin\Debug\Tesseract.xml

@@ -63,9 +63,9 @@ namespace live_cam.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap c00_tL {
+        internal static System.Drawing.Bitmap baseSprite {
             get {
-                object obj = ResourceManager.GetObject("c00_tL", resourceCulture);
+                object obj = ResourceManager.GetObject("baseSprite", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -73,9 +73,9 @@ namespace live_cam.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap c00_tR {
+        internal static System.Drawing.Bitmap c00 {
             get {
-                object obj = ResourceManager.GetObject("c00_tR", resourceCulture);
+                object obj = ResourceManager.GetObject("c00", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -83,9 +83,9 @@ namespace live_cam.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap c00_tU {
+        internal static System.Drawing.Bitmap c01 {
             get {
-                object obj = ResourceManager.GetObject("c00_tU", resourceCulture);
+                object obj = ResourceManager.GetObject("c01", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -93,9 +93,9 @@ namespace live_cam.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap c01_tL {
+        internal static System.Drawing.Bitmap c10 {
             get {
-                object obj = ResourceManager.GetObject("c01_tL", resourceCulture);
+                object obj = ResourceManager.GetObject("c10", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -103,9 +103,9 @@ namespace live_cam.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap c01_tR {
+        internal static System.Drawing.Bitmap c11 {
             get {
-                object obj = ResourceManager.GetObject("c01_tR", resourceCulture);
+                object obj = ResourceManager.GetObject("c11", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -113,9 +113,9 @@ namespace live_cam.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap c01_tU {
+        internal static System.Drawing.Bitmap c20 {
             get {
-                object obj = ResourceManager.GetObject("c01_tU", resourceCulture);
+                object obj = ResourceManager.GetObject("c20", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -123,9 +123,9 @@ namespace live_cam.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap c10_tL {
+        internal static System.Drawing.Bitmap c21 {
             get {
-                object obj = ResourceManager.GetObject("c10_tL", resourceCulture);
+                object obj = ResourceManager.GetObject("c21", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -133,9 +133,9 @@ namespace live_cam.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap c10_tR {
+        internal static System.Drawing.Bitmap c30 {
             get {
-                object obj = ResourceManager.GetObject("c10_tR", resourceCulture);
+                object obj = ResourceManager.GetObject("c30", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -143,9 +143,9 @@ namespace live_cam.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap c10_tU {
+        internal static System.Drawing.Bitmap c31 {
             get {
-                object obj = ResourceManager.GetObject("c10_tU", resourceCulture);
+                object obj = ResourceManager.GetObject("c31", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -153,9 +153,9 @@ namespace live_cam.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap c11_tL {
+        internal static System.Drawing.Bitmap mH1 {
             get {
-                object obj = ResourceManager.GetObject("c11_tL", resourceCulture);
+                object obj = ResourceManager.GetObject("mH1", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -163,9 +163,9 @@ namespace live_cam.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap c11_tR {
+        internal static System.Drawing.Bitmap mH2 {
             get {
-                object obj = ResourceManager.GetObject("c11_tR", resourceCulture);
+                object obj = ResourceManager.GetObject("mH2", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -173,9 +173,9 @@ namespace live_cam.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap c11_tU {
+        internal static System.Drawing.Bitmap mN {
             get {
-                object obj = ResourceManager.GetObject("c11_tU", resourceCulture);
+                object obj = ResourceManager.GetObject("mN", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -183,9 +183,9 @@ namespace live_cam.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap c20_tL {
+        internal static System.Drawing.Bitmap mS1 {
             get {
-                object obj = ResourceManager.GetObject("c20_tL", resourceCulture);
+                object obj = ResourceManager.GetObject("mS1", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -193,9 +193,9 @@ namespace live_cam.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap c20_tR {
+        internal static System.Drawing.Bitmap mS2 {
             get {
-                object obj = ResourceManager.GetObject("c20_tR", resourceCulture);
+                object obj = ResourceManager.GetObject("mS2", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -203,9 +203,9 @@ namespace live_cam.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap c20_tU {
+        internal static System.Drawing.Bitmap tL {
             get {
-                object obj = ResourceManager.GetObject("c20_tU", resourceCulture);
+                object obj = ResourceManager.GetObject("tL", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -213,9 +213,9 @@ namespace live_cam.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap c21_tL {
+        internal static System.Drawing.Bitmap tR {
             get {
-                object obj = ResourceManager.GetObject("c21_tL", resourceCulture);
+                object obj = ResourceManager.GetObject("tR", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -223,79 +223,9 @@ namespace live_cam.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap c21_tR {
+        internal static System.Drawing.Bitmap tU {
             get {
-                object obj = ResourceManager.GetObject("c21_tR", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap c21_tU {
-            get {
-                object obj = ResourceManager.GetObject("c21_tU", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap c30_tL {
-            get {
-                object obj = ResourceManager.GetObject("c30_tL", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap c30_tR {
-            get {
-                object obj = ResourceManager.GetObject("c30_tR", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap c30_tU {
-            get {
-                object obj = ResourceManager.GetObject("c30_tU", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap c31_tL {
-            get {
-                object obj = ResourceManager.GetObject("c31_tL", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap c31_tR {
-            get {
-                object obj = ResourceManager.GetObject("c31_tR", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap c31_tU {
-            get {
-                object obj = ResourceManager.GetObject("c31_tU", resourceCulture);
+                object obj = ResourceManager.GetObject("tU", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

@@ -47,6 +47,9 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="Tesseract, Version=3.0.2.0, Culture=neutral, PublicKeyToken=ebeb3d86bef60cbe, processorArchitecture=MSIL">
+      <HintPath>..\packages\Tesseract.3.0.2.0\lib\net451\Tesseract.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="LiveCam.cs">
@@ -62,6 +65,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="ScreenCapture.cs" />
     <Compile Include="Utilities.cs" />
     <EmbeddedResource Include="LiveCam.resx">
       <DependentUpon>LiveCam.cs</DependentUpon>
@@ -71,6 +75,7 @@
       <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -86,31 +91,36 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="LookOfDisapproval_128x128.png" />
+    <None Include="Resources\c00.png" />
+    <None Include="Resources\c01.png" />
+    <None Include="Resources\c10.png" />
+    <None Include="Resources\c11.png" />
+    <None Include="Resources\c20.png" />
+    <None Include="Resources\c21.png" />
+    <None Include="Resources\c30.png" />
+    <None Include="Resources\c31.png" />
+    <None Include="Resources\baseSprite.png" />
+    <None Include="Resources\mH1.png" />
+    <None Include="Resources\mH2.png" />
+    <None Include="Resources\mN.png" />
+    <None Include="Resources\mS1.png" />
+    <None Include="Resources\mS2.png" />
+    <None Include="Resources\tL.png" />
+    <None Include="Resources\tR.png" />
+    <None Include="Resources\tU.png" />
     <Content Include="squared_icon_for_osu.ico" />
-    <None Include="Resources\c31_tU.png" />
-    <None Include="Resources\c11_tU.png" />
-    <None Include="Resources\c01_tR.png" />
-    <None Include="Resources\c31_tR.png" />
-    <None Include="Resources\c31_tL.png" />
-    <None Include="Resources\c30_tU.png" />
-    <None Include="Resources\c30_tR.png" />
-    <None Include="Resources\c30_tL.png" />
-    <None Include="Resources\c21_tU.png" />
-    <None Include="Resources\c21_tR.png" />
-    <None Include="Resources\c21_tL.png" />
-    <None Include="Resources\c20_tU.png" />
-    <None Include="Resources\c20_tR.png" />
-    <None Include="Resources\c20_tL.png" />
-    <None Include="Resources\c11_tR.png" />
-    <None Include="Resources\c11_tL.png" />
-    <None Include="Resources\c10_tU.png" />
-    <None Include="Resources\c10_tR.png" />
-    <None Include="Resources\c10_tL.png" />
-    <None Include="Resources\c01_tU.png" />
-    <None Include="Resources\c01_tL.png" />
-    <None Include="Resources\c00_tU.png" />
-    <None Include="Resources\c00_tR.png" />
-    <None Include="Resources\c00_tL.png" />
+    <Content Include="x64\liblept172.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x64\libtesseract304.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x86\liblept172.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="x86\libtesseract304.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
